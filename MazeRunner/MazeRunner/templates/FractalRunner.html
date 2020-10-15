@@ -1,0 +1,403 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+
+<script>
+    //
+    //{ { title } }
+    //{ { xDimension } }
+    //{ { yDimension } }
+    
+    function debug(text) {
+        //document.write(text + "<br>");
+    }
+    debug("At start of script.");
+    
+    class tile {
+        constructor(myColor, mySides, xPos, yPos) {
+            this.myColor = myColor; 
+            this.mySides = mySides;
+            this.xPos = xPos;
+            this.yPos = yPos;
+        }
+
+        get color() {
+            return this.myColor;
+        }
+
+        get sides() {
+            return this.mySides;
+        }
+
+        setRight(flag) {
+            if (flag == true) {
+                if (this.mySides == "B")
+                    this.mySides = "RB";
+                else if (this.mySides == "C")
+                    this.mySides = "R";
+            }
+            else {
+                if (this.mySides == "RB")
+                    this.mySides = "B";
+                else if (this.mySides == "R")
+                    this.mySides = "C";
+            }
+        }
+
+        setSides(sides) {
+            this.mySides = sides;
+        }
+
+        setBottom(flag) {
+            if (flag == true) {
+                if (this.mySides == "R")
+                    this.mySides = "RB";
+                else if (this.mySides == "C")
+                    this.mySides = "B";
+            }
+            else {
+                if (this.mySides == "RB")
+                    this.mySides = "R";
+                else if (this.mySides == "B")
+                    this.mySides = "C";
+            }
+        }
+
+        Display() {
+            document.write("<button class = \"");
+            if (this.myColor == 'green')
+                document.write("green-button");
+            else if (this.myColor == 'black')
+                document.write("black-button");
+            else if (this.myColor == 'red')
+                document.write("red-button");
+            else if (this.myColor == 'blue')
+                document.write("blue-button");
+            else
+                document.write("white-button");
+
+            document.write(" ");
+
+            if (this.mySides == "R")
+                document.write("MazeRight");
+            else if (this.mySides == "B")
+                document.write("MazeBottom");
+            else if (this.mySides == "RB")
+                document.write("MazeRB");
+            else if (this.mySides == "C")
+                document.write("MazeClear");
+            else if (this.mySides == "Start")
+                document.write("MazeStart");
+            else if (this.mySides == "Finish")
+                document.write("MazeFinish");
+            document.write("\">");
+        }
+    }
+    
+
+
+
+
+    const MazeWidth = 155;
+    const MazeHeight = 70;
+    let Maze_Locations = Array(MazeWidth).fill().map(() => Array(MazeHeight));
+
+    debug("Width = " + MazeWidth);
+    
+
+    function InitializeMaze() {
+        var i = 0;
+
+        for (var x = 0; x < MazeWidth; x++) {        
+            for (var y = 0; y < MazeHeight; y++) {
+                Maze_Locations[x][y] = new tile("white", "C", x, y);
+                if (y == MazeHeight - 1) {
+                    Maze_Locations[x][y].setBottom(true);
+                }
+                if (x == MazeWidth - 1) {
+                    Maze_Locations[x][y].setRight(true);
+                }
+            }
+        }
+    }
+
+    function HorizontalLine(beginX, endX, y, hasGap) {
+        debug("Horizontal Line X(" + beginX + "-" + endX + "), Y=" + y + ", hasGap = " + hasGap);
+        for (var x = beginX; x <= endX; x++) {
+            debug(".");
+            debug("[" + x + "][" + y + "].  Current Value = " + Maze_Locations[x][y].mySides);
+            Maze_Locations[x][y].setBottom(true);
+        }
+        if (hasGap == true) {
+            var Position = Math.floor(Math.random() * (endX - beginX)) + beginX;
+            Maze_Locations[Position][y].setBottom(false);
+        }
+    }
+    
+    debug("HorizontalLine Parses");
+    
+    function VerticalLine(beginY, endY, x, hasGap) {
+        //debug("Vertical Line Y(" + beginY + "-" + endY + "), X=" + x + ", hasGap = " + hasGap);
+        for (var y = beginY; y <= endY; y++) {
+            Maze_Locations[x][y].setRight(true);
+        }
+        if (hasGap == true) {
+            var Position = Math.floor(Math.random() * (endY - beginY)) + beginY;
+            Maze_Locations[x][Position].setRight(false);
+        }
+
+    }
+
+
+    debug("VerticalLine Parses");
+    //make six subsquares, 3 across and 2 down.
+    function Subdivide_H(beginX, endX, beginY, endY) {
+        debug("Subdivide_H X(" + beginX + "-" + endX + "), Y(" + beginY + "-" + endY + ").");
+        var spanX = endX - beginX ;
+        var spanY = endY - beginY ;
+        var VlinePosition1 = Math.floor(((Math.random() + Math.random() + Math.random() + Math.random()) * spanX / 12) + beginX + spanX / 6);
+        var VlinePosition2 = Math.floor(((Math.random() + Math.random() + Math.random() + Math.random()) * spanX / 12) + beginX + spanX / 2);
+        var HlinePosition = Math.floor((Math.random() + Math.random() + Math.random() + Math.random()) * spanY / 4) + beginY;
+        var NoGapPosition = Math.floor(Math.random() * 6);
+
+        if (HlinePosition >= endY)
+            HlinePosition = endY - 1;
+
+        if (VlinePosition1 >= VlinePosition2) {
+            VlinePosition1--;
+            VlinePosition2++;
+        }
+        if (VlinePosition1 < beginX)
+            VlinePosition1 = beginX;
+        if (VlinePosition2 >= endX)
+            VlinePosition2 = endX - 1;
+
+        if (NoGapPosition == 0)
+            HorizontalLine(beginX, VlinePosition1, HlinePosition, false);
+        else
+            HorizontalLine(beginX, VlinePosition1, HlinePosition, true);
+        
+        HorizontalLine(VlinePosition1 + 1, VlinePosition2, HlinePosition, false);  //always display middle of the H.               
+
+        if (NoGapPosition == 1)
+            HorizontalLine(VlinePosition2 + 1, endX, HlinePosition, false);
+        else
+            HorizontalLine(VlinePosition2 + 1, endX, HlinePosition, true);
+
+        if (NoGapPosition == 2)
+            VerticalLine(beginY, HlinePosition, VlinePosition1, false);
+        else
+            VerticalLine(beginY, HlinePosition, VlinePosition1, true);
+
+        if (NoGapPosition == 3)
+            VerticalLine(HlinePosition + 1, endY, VlinePosition1, false);
+        else
+            VerticalLine(HlinePosition + 1, endY, VlinePosition1, true);
+
+        if (NoGapPosition == 4)
+            VerticalLine(beginY, HlinePosition, VlinePosition2, false);
+        else
+            VerticalLine(beginY, HlinePosition, VlinePosition2, true);
+
+        if (NoGapPosition == 5)
+            VerticalLine(HlinePosition + 1, endY, VlinePosition2, false);
+        else
+            VerticalLine(HlinePosition + 1, endY, VlinePosition2, true);
+
+
+        debug("Verticals are " + VlinePosition1 + "and " + VlinePosition2 + ", horizontal = " + HlinePosition + ".");
+        debug("calling subdivide with ".concat(beginX, VlinePosition1, beginY, HlinePosition));
+        debug("calling subdivide with ".concat(VlinePosition1 + 1, VlinePosition2, beginY, HlinePosition));
+        debug("calling subdivide with ".concat(VlinePosition2 + 1, endX, beginY, HlinePosition));
+        debug("calling subdivide with ".concat(beginX, VlinePosition1, HlinePosition + 1, endY));
+        debug("calling subdivide with ".concat(VlinePosition1 + 1, VlinePosition2, HlinePosition + 1, endY));
+        debug("calling subdivide with ".concat(VlinePosition2 + 1, endX, HlinePosition + 1, endY));
+        Subdivide(beginX, VlinePosition1, beginY, HlinePosition);
+        Subdivide(VlinePosition1 + 1, VlinePosition2, beginY, HlinePosition);
+        Subdivide(VlinePosition2 + 1, endX, beginY, HlinePosition);
+        Subdivide(beginX, VlinePosition1, HlinePosition + 1, endY);
+        Subdivide(VlinePosition1 + 1, VlinePosition2, HlinePosition + 1, endY);
+        Subdivide(VlinePosition2 + 1, endX, HlinePosition + 1, endY);
+    }
+
+    debug("subdivideH Parses");
+
+    //make six subsquares, 2 across and 3 down
+    function Subdivide_I(beginX, endX, beginY, endY) {
+        debug("Subdivide_I X(" + beginX + "-" + endX + "), Y(" + beginY + "-" + endY + ").");
+        var spanX = endX - beginX ;
+        var spanY = endY - beginY ;
+        var VlinePosition = Math.floor((Math.random() + Math.random() + Math.random() + Math.random()) * spanX / 4) + beginX;
+        var HlinePosition1 = Math.floor(((Math.random() + Math.random() + Math.random() + Math.random()) * spanY / 12) + beginY + spanY / 6);
+        var HlinePosition2 = Math.floor(((Math.random() + Math.random() + Math.random() + Math.random()) * spanY / 12) + beginY + spanY / 2);
+        var NoGapPosition = Math.floor(Math.random() * 6);
+
+        if (VlinePosition >= endX)
+            VlinePosition = endX - 1;
+
+        if (HlinePosition1 >= HlinePosition2) {
+            HlinePosition1--;
+            HlinePosition2++;
+        }
+        if (HlinePosition1 < beginY)
+            HlinePosition1 = beginY;
+        if (HlinePosition2 >= endY)
+            HlinePosition2 = endY - 1;
+
+        if (NoGapPosition == 0)
+            HorizontalLine(beginX, VlinePosition, HlinePosition1, false);
+        else
+            HorizontalLine(beginX, VlinePosition, HlinePosition1, true);
+
+        if (NoGapPosition == 1)
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition1, false);
+        else
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition1, true);
+
+        if (NoGapPosition == 2)
+            HorizontalLine(beginX, VlinePosition, HlinePosition2, false);
+        else
+            HorizontalLine(beginX, VlinePosition, HlinePosition2, true);
+
+        if (NoGapPosition == 3)
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition2, false);
+        else
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition2, true);
+
+        if (NoGapPosition == 4)
+            VerticalLine(beginY, HlinePosition1, VlinePosition, false);
+        else
+            VerticalLine(beginY, HlinePosition1, VlinePosition, true);
+
+        VerticalLine(HlinePosition1 + 1, HlinePosition2, VlinePosition, false);  //Always display line in the middle of the I
+
+        if (NoGapPosition == 5)
+            VerticalLine(HlinePosition2 + 1, endY, VlinePosition, false);
+        else
+            VerticalLine(HlinePosition2 + 1, endY, VlinePosition, true);
+
+
+        debug("Vertical = " + VlinePosition + ", horizontals are " + HlinePosition1 + " and " + HlinePosition2 + ".");
+        debug("calling subdivide with ".concat(beginX, VlinePosition, beginY, HlinePosition1));
+        debug("calling subdivide with ".concat(beginX, VlinePosition, HlinePosition1 + 1, HlinePosition2));
+        debug("calling subdivide with ".concat(beginX, VlinePosition, HlinePosition2 + 1, endY));
+        debug("calling subdivide with ".concat(VlinePosition + 1, endY, beginY, HlinePosition1));
+        debug("calling subdivide with ".concat(VlinePosition + 1, endY, HlinePosition1 + 1, HlinePosition2));
+        debug("calling subdivide with ".concat(VlinePosition + 1, endY, HlinePosition2 + 1, endY));
+        Subdivide(beginX, VlinePosition, beginY, HlinePosition1);
+        Subdivide(beginX, VlinePosition, HlinePosition1 + 1, HlinePosition2);
+        Subdivide(beginX, VlinePosition, HlinePosition2 + 1, endY);
+        Subdivide(VlinePosition + 1, endX, beginY, HlinePosition1);
+        Subdivide(VlinePosition + 1, endX, HlinePosition1 + 1, HlinePosition2);
+        Subdivide(VlinePosition + 1, endX, HlinePosition2 + 1, endY);
+    }
+
+    debug("subdivideI Parses"); 
+
+    //make four subsquares, 2 across and 2 down
+    function Subdivide_Cross(beginX, endX, beginY, endY) {
+        debug("Subdivide_Cross X(" + beginX + "-" + endX + "), Y(" + beginY + "-" + endY + ").");
+        var spanX = endX - beginX ;
+        var spanY = endY - beginY ;
+        //we take the average of four random numbers because we want the lines to be near the center.
+        var VlinePosition = Math.floor((Math.random() + Math.random() + Math.random() + Math.random()) * spanX / 4) + beginX;
+        var HlinePosition = Math.floor((Math.random() + Math.random() + Math.random() + Math.random()) * spanY / 4) + beginY;
+        var NoGapPosition = Math.floor(Math.random() * 4);
+        debug("post Random, HlinePosition = " + HlinePosition + "vline = " + VlinePosition);
+
+        if (VlinePosition >= endX)
+            VlinePosition = endX - 1;
+        if (HlinePosition >= endY)
+            HlinePosition = endY - 1;
+        debug("Post Correction");
+
+        if (NoGapPosition == 0)
+            HorizontalLine(beginX, VlinePosition, HlinePosition, false);
+        else
+            HorizontalLine(beginX, VlinePosition, HlinePosition, true);
+
+        if (NoGapPosition == 1)
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition, false);
+        else
+            HorizontalLine(VlinePosition + 1, endX, HlinePosition, true);
+
+        debug("Post Horizontal Lines");
+
+        if (NoGapPosition == 2)
+            VerticalLine(beginY, HlinePosition, VlinePosition, false);
+        else
+            VerticalLine(beginY, HlinePosition, VlinePosition, true);
+
+        if (NoGapPosition == 3)
+            VerticalLine(HlinePosition + 1, endY, VlinePosition, false);
+        else
+            VerticalLine(HlinePosition + 1, endY, VlinePosition, true);
+
+        debug("Vertical = " + VlinePosition + ", horizontal = " + HlinePosition + ".");
+        debug("calling subdivide with ".concat(beginX, VlinePosition, beginY, HlinePosition));
+        debug("calling subdivide with ".concat(VlinePosition + 1, endX, beginY, HlinePosition));
+        debug("calling subdivide with ".concat(beginX, VlinePosition, HlinePosition + 1, endY));
+        debug("calling subdivide with ".concat(VlinePosition + 1, endX, HlinePosition + 1, endY));
+        Subdivide(beginX, VlinePosition, beginY, HlinePosition);
+        Subdivide(VlinePosition + 1, endX, beginY, HlinePosition);
+        Subdivide(beginX, VlinePosition, HlinePosition + 1, endY);
+        Subdivide(VlinePosition + 1, endX, HlinePosition + 1, endY);
+    }
+
+    debug("subdivideCross Parses");
+
+    
+    function Subdivide(beginX, endX, beginY, endY) {
+        debug("subdivision X(" + beginX + "-" + endX + "), Y(" + beginY + "-" + endY + ").");
+        if ((beginX >= endX) || (beginY >= endY))
+            return;
+        
+        if (endY - beginY > (endX - beginX) * 1.5) {
+            Subdivide_I(beginX, endX, beginY, endY);
+        }
+        //else if (endX - beginX > (endY - beginY) * 1.5) {
+            //Subdivide_H(beginX, endX, beginY, endY);
+        //}
+        else {
+        
+            Subdivide_Cross(beginX, endX, beginY, endY);
+        }
+    }
+
+
+    debug("subdivide Parses");
+
+
+    function displayAllTiles() {
+        document.writeln("<table>");
+        for (y = 0; y < MazeHeight; y++) {
+            document.writeln("<tr>");
+            for (x = 0; x < MazeWidth; x++) {
+                document.write("<td>");
+                Maze_Locations[x][y].Display();
+                document.write("</td>");
+            }
+            document.writeln("</tr>");
+        }
+        document.writeln("</table>");
+
+    }
+
+
+    debug("Initializing");
+    InitializeMaze();
+    debug("Creating Walls");
+    Subdivide(0, MazeWidth - 1, 0, MazeHeight - 1);
+    Maze_Locations[0][0].setSides("Start");
+    Maze_Locations[MazeWidth - 1][MazeHeight - 1].setSides("Finish");
+    debug("Displaying");
+    displayAllTiles();
+    
+
+</script>
+
+
+
+
+{% endblock %}

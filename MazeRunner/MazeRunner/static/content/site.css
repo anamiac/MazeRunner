@@ -1,0 +1,108 @@
+body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+/* styles for validation helpers */
+.field-validation-error {
+    color: #b94a48;
+}
+
+.field-validation-valid {
+    display: none;
+}
+
+input.input-validation-error {
+    border: 1px solid #b94a48;
+}
+
+input[type="checkbox"].input-validation-error {
+    border: 0 none;
+}
+
+.validation-summary-errors {
+    color: #b94a48;
+}
+
+.validation-summary-valid {
+    display: none;
+}
+
+
+/*JBD 10/10/2020 added various CSS for maze buttons, maze walls, etc.*/
+
+.white-button {
+    background-color: #FFFFFF;
+}
+
+.black-button {
+    background-color: #000000;
+}
+
+.green-button {
+    background-color: #00ff21;
+}
+
+.red-button {
+    background-color: #ff0000;
+}
+
+.blue-button {
+    background-color: #1c28ff;
+}
+
+button {
+    width: 12px;
+    height: 12px;
+    background-size: cover;
+    border-width: 0px;
+    border-spacing: 0px;
+}
+
+th, td {
+    padding: 0px;
+}
+
+table {
+    border-top: 4px solid black;
+    border-left: 4px solid black;
+    border-spacing: 0px;
+    padding-left: 20px;
+}
+
+.MazeBottom {
+    background-image: url("/static/Maze_Bottom.png");
+}
+
+.MazeRight {
+    background-image: url("/static/Maze_Right.png");
+}
+
+.MazeClear {
+    background-image: url("/static/Maze_Clear.png");
+}
+
+.MazeRB {
+    background-image: url("/static/Maze_RB.png");
+}
+
+.MazeStart {
+    background-image: url("/static/Maze_Start.png");
+}
+
+.MazeFinish {
+    background-image: url("/static/Maze_Finish.png");
+}

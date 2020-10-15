@@ -1,0 +1,239 @@
+﻿{% extends "layout.html" %}
+
+{% block content %}
+
+
+<script>
+    //
+    //{ { title } }
+    //{ { xDimension } }
+    //{ { yDimension } }
+
+
+    function debug(text) {
+        //document.write(text + "<br>");
+    }
+    debug("At start of script.");
+
+    class tile {
+        constructor(myColor, mySides, xPos, yPos) {
+            this.myColor = myColor;
+            this.mySides = mySides;
+            this.xPos = xPos;
+            this.yPos = yPos;
+        }
+
+        get color() {
+            return this.myColor;
+        }
+
+        get sides() {
+            return this.mySides;
+        }
+
+        setRight(flag) {
+            if (flag == true) {
+                if (this.mySides == "B")
+                    this.mySides = "RB";
+                else if (this.mySides == "C")
+                    this.mySides = "R";
+            }
+            else {
+                if (this.mySides == "RB")
+                    this.mySides = "B";
+                else if (this.mySides == "R")
+                    this.mySides = "C";
+            }
+        }
+
+        setSides(sides) {
+            this.mySides = sides;
+        }
+
+        setBottom(flag) {
+            if (flag == true) {
+                if (this.mySides == "R")
+                    this.mySides = "RB";
+                else if (this.mySides == "C")
+                    this.mySides = "B";
+            }
+            else {
+                if (this.mySides == "RB")
+                    this.mySides = "R";
+                else if (this.mySides == "B")
+                    this.mySides = "C";
+            }
+        }
+
+        Display() {
+            document.write("<button class = \"");
+            if (this.myColor == 'green')
+                document.write("green-button");
+            else if (this.myColor == 'black')
+                document.write("black-button");
+            else if (this.myColor == 'red')
+                document.write("red-button");
+            else if (this.myColor == 'blue')
+                document.write("blue-button");
+            else
+                document.write("white-button");
+
+            document.write(" ");
+
+            if (this.mySides == "R")
+                document.write("MazeRight");
+            else if (this.mySides == "B")
+                document.write("MazeBottom");
+            else if (this.mySides == "RB")
+                document.write("MazeRB");
+            else if (this.mySides == "C")
+                document.write("MazeClear");
+            else if (this.mySides == "Start")
+                document.write("MazeStart");
+            else if (this.mySides == "Finish")
+                document.write("MazeFinish");
+            document.write("\">");
+        }
+    }
+
+    
+
+
+
+    const MazeWidth = 155;
+    const MazeHeight = 70;
+    let Maze_Locations = Array(MazeWidth).fill().map(() => Array(MazeHeight));
+    let MazeTileList = new Array(MazeWidth * MazeHeight);
+
+    debug("Width = " + MazeWidth);
+
+    function newTile(x, y, i) {
+        Maze_Locations[x][y] = new tile('black', 'C', x, y);
+        MazeTileList[i] = Maze_Locations[x][y];
+    }
+
+
+    function InitializeMaze() {
+        var i = 0;
+
+        for (var x = 0; x < Math.max(MazeWidth, MazeHeight); x++) {
+            //for (var y = x - 1; y >= 0; y--) {
+            for (var y = 0; y < x; y++) {
+                //debug("x = " + x + ", y = " + y + ", i = " + i);
+                if (x < MazeWidth && y < MazeHeight) {
+                    newTile(x, y, i++);
+                    //Maze_Locations[x][y] = new tile('black', 'C', x, y);
+                    //MazeTileList[i] = Maze_Locations[x][y];
+                    //i++;
+                }
+                if (y < MazeWidth && x < MazeHeight) {
+                    newTile(y, x, i++);
+                    //Maze_Locations[y][x] = new tile('black', 'C', y, x);
+                    //MazeTileList[i] = Maze_Locations[y][x];
+                    //i++;
+                }
+            }
+            if (x < MazeWidth && x < MazeHeight) {
+                newTile(x, x, i++);
+                //Maze_Locations[x][x] = new tile('black', 'C', x, x);
+                //MazeTileList[i] = Maze_Locations[x][x];
+                //i++;
+            }
+        }
+    }
+    //Randomly Builds all the walls of the maze.
+    function MeteorMaze() {
+
+        var Position, x, y;
+        //Starter tile is a random position.
+        Position = Math.floor(Math.random() * MazeTileList.length);
+        x = MazeTileList[Position].xPos;
+        y = MazeTileList[Position].yPos;
+        Maze_Locations[x][y].myColor = 'white';
+        Maze_Locations[x][y].setRight(true);
+        Maze_Locations[x][y].setBottom(true);
+        MazeTileList.splice(Position, 1);
+
+        //Maze_Locations[0][0].myColor = 'White';
+        //Maze_Locations[0][0].setRight(true);
+        //Maze_Locations[0][0].setBottom(true);
+        //MazeTileList.splice(0, 1);
+
+        while (MazeTileList.length > 0) {
+            //Position = Math.floor(Math.random() * Math.random() * MazeTileList.length);
+            Position = Math.floor(Math.random() * MazeTileList.length);
+            x = MazeTileList[Position].xPos;
+            y = MazeTileList[Position].yPos;
+            if ((x < MazeWidth - 1) && (Maze_Locations[x + 1][y].myColor != 'black')) {
+                Maze_Locations[x][y].myColor = 'white';
+                Maze_Locations[x][y].setRight(false);
+                Maze_Locations[x][y].setBottom(true);
+                if (x > 0)
+                    Maze_Locations[x - 1][y].setRight(true);
+                if (y > 0)
+                    Maze_Locations[x][y - 1].setBottom(true);
+                MazeTileList.splice(Position, 1);
+            }
+            else if ((y < MazeHeight - 1) && (Maze_Locations[x][y + 1].myColor != 'black')) {
+                Maze_Locations[x][y].myColor = 'white';
+                Maze_Locations[x][y].setRight(true);
+                Maze_Locations[x][y].setBottom(false);
+                if (x > 0)
+                    Maze_Locations[x - 1][y].setRight(true);
+                if (y > 0)
+                    Maze_Locations[x][y - 1].setBottom(true);
+                MazeTileList.splice(Position, 1);
+            }
+            else if ((x > 0) && (Maze_Locations[x - 1][y].myColor != 'black')) {
+                Maze_Locations[x][y].myColor = 'white';
+                Maze_Locations[x][y].setRight(true);
+                Maze_Locations[x][y].setBottom(true);
+                Maze_Locations[x - 1][y].setRight(false);
+                if (y > 0)
+                    Maze_Locations[x][y - 1].setBottom(true);
+                MazeTileList.splice(Position, 1);
+            }
+            else if ((y > 0) && (Maze_Locations[x][y - 1].myColor != 'black')) {
+                Maze_Locations[x][y].myColor = 'white';
+                Maze_Locations[x][y].setRight(true);
+                Maze_Locations[x][y].setBottom(true);
+                if (x > 0)
+                    Maze_Locations[x - 1][y].setRight(true);
+                Maze_Locations[x][y - 1].setBottom(false);
+                MazeTileList.splice(Position, 1);
+            }
+        }
+        Maze_Locations[0][0].setSides("Start");
+        Maze_Locations[MazeWidth - 1][MazeHeight - 1].setSides("Finish");
+    }
+
+
+    function displayAllTiles() {
+        document.writeln("<table>");
+        for (y = 0; y < MazeHeight; y++) {
+            document.writeln("<tr>");
+            for (x = 0; x < MazeWidth; x++) {
+                document.write("<td>");
+                Maze_Locations[x][y].Display();
+                document.write("</td>");
+            }
+            document.writeln("</tr>");
+        }
+        document.writeln("</table>");
+
+    }
+
+
+    debug("Initializing");
+    InitializeMaze();
+    debug("Creating Walls");
+    MeteorMaze();
+    debug("Displaying");
+    displayAllTiles();
+
+</script>
+
+
+
+
+{% endblock %}
